@@ -26,6 +26,8 @@ namespace FamilyBudgetServer
             services.ConfigureCors();
             services.ConfigureIISIntegration();
             services.ConfigureLoggerService();
+            services.ConfigureMySqlContext(Configuration);
+            services.ConfigureRepositoryWrapper();
 
             services.AddControllers();
         }
