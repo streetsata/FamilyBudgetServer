@@ -30,6 +30,7 @@ namespace FamilyBudgetServer
             services.ConfigureMySqlContext(Configuration);
             services.ConfigureRepositoryWrapper();
             services.AddAutoMapper(typeof(Startup));
+            services.ConfigureSwagger();
 
             services.AddControllers();
         }
@@ -40,6 +41,12 @@ namespace FamilyBudgetServer
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Family Budget API V1");
+            });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
