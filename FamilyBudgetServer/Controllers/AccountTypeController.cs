@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using Contracts;
+using Entities.Models;
 using Entities.Models.DataTransferObjects;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +44,7 @@ namespace FamilyBudgetServer.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "AccountTypeById")]
         public IActionResult GetAccountTypeById(Guid id)
         {
             try
@@ -93,6 +95,101 @@ namespace FamilyBudgetServer.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Something went wrong inside GetAccountTypeWithDetails action: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CreateAccountType([FromBody] AccountTypeForCreationDto accountType)
+        {
+            try
+            {
+                if (accountType == null)
+                {
+                    _logger.LogError("AccountType object sent from client is null.");
+                    return BadRequest("AccountType object is null");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogError("Invalid AccountType object sent from client.");
+                    return BadRequest("Invalid model object");
+                }
+
+                var accountTypeEntity = _mapper.Map<AccountType>(accountType);
+
+                _repository.AccountType.CreateAccountType(accountTypeEntity);
+                _repository.Save();
+
+                var createdAccountType = _mapper.Map<AccountTypesDTO>(accountTypeEntity);
+
+                return CreatedAtRoute("AccountTypeById", new { id = createdAccountType.AccountTypeID }, createdAccountType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong inside CreateAccountType action: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateAccountType(Guid id, [FromBody] AccountTypeForUpdateDTO accountType)
+        {
+            try
+            {
+                if (accountType == null)
+                {
+                    _logger.LogError("AccountType object sent from client is null.");
+                    return BadRequest("AccountType object is null");
+                }
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogError("Invalid accountType object sent from client.");
+                    return BadRequest("Invalid model object");
+                }
+                var accountTypeEntity = _repository.AccountType.GetAccountTypeById(id);
+                if (accountTypeEntity == null)
+                {
+                    _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
+                    return NotFound();
+                }
+                _mapper.Map(accountType, accountTypeEntity);
+                _repository.AccountType.UpdateAccountType(accountTypeEntity);
+                _repository.Save();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong inside UpdateAccountType action: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteAccountType(Guid id)
+        {
+            try
+            {
+                var accountType = _repository.AccountType.GetAccountTypeById(id);
+                if (accountType == null)
+                {
+                    _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
+                    return NotFound();
+                }
+
+                if (_repository.Account.AccountsByAccountType(id).Any())
+                {
+                    _logger.LogError($"Cannot delete AccountType with id: {id}. It has related accounts. Delete those accounts first");
+                    return BadRequest("Cannot delete AccountType. It has related accounts. Delete those accounts first");
+                }
+
+                _repository.AccountType.DeleteAccountType(accountType);
+                _repository.Save();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong inside DeleteAccountType action: {ex.Message}");
                 return StatusCode(500, "Internal server error");
             }
         }

@@ -35,5 +35,20 @@ namespace Repository.Models
                 .Include(ac => ac.Accounts)
                 .FirstOrDefault();
         }
+
+        public void CreateAccountType(AccountType accountType)
+        {
+            Create(accountType);
+        }
+
+        public void UpdateAccountType(AccountType accountType)
+        {
+            Update(accountType);
+        }
+
+        public void DeleteAccountType(AccountType accountType)
+        {
+            Delete(accountType);
+        }
     }
 }

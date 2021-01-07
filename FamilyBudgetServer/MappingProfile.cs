@@ -8,8 +8,12 @@ namespace FamilyBudgetServer
     {
         public MappingProfile()
         {
+            #region AccountType
             CreateMap<AccountType, AccountTypesDTO>();
             CreateMap<Account, AccountDTO>();
+            CreateMap<AccountTypeForCreationDto, AccountType>();
+            CreateMap<AccountTypeForUpdateDTO, AccountType>();
+            #endregion
         }
     }
 }

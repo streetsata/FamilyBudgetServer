@@ -7,5 +7,6 @@ namespace Contracts.Models
 {
     public interface IAccountRepository : IRepositoryBase<Account>
     {
+        IEnumerable<Account> AccountsByAccountType(Guid accountTypeId);
     }
 }

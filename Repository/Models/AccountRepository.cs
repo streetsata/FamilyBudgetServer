@@ -14,5 +14,12 @@ namespace Repository.Models
             : base(repositoryContext)
         {
         }
+
+        public IEnumerable<Account> AccountsByAccountType(Guid accountTypeId)
+        {
+            return FindByCondition(ac => ac.AccountTypeID.Equals(accountTypeId));
+        }
+
+        
     }
 }
