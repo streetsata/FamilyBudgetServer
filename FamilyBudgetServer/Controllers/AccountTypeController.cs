@@ -36,21 +36,12 @@ namespace FamilyBudgetServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAccountTypes()
         {
-            try
-            {
-                var accountTypes = await _repository.AccountType.GetAllAccountTypesAsync();
-                _logger.LogInfo("Returned all accountTypes from database.");
+            var accountTypes = await _repository.AccountType.GetAllAccountTypesAsync();
+            _logger.LogInfo($"Fetching all accountTypes from database. Returning {accountTypes.Count()} accountTypes.");
 
-                var accountTypesResult = _mapper.Map<IEnumerable<AccountTypesDTO>>(accountTypes);
+            var accountTypesResult = _mapper.Map<IEnumerable<AccountTypesDTO>>(accountTypes);
 
-                return Ok(accountTypesResult);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Something went wrong inside GetAllAccountTypes action: {ex.Message}");
-
-                return StatusCode(500, "Internal server error");
-            }
+            return Ok(accountTypesResult);
         }
 
         /// <summary>
@@ -68,28 +59,19 @@ namespace FamilyBudgetServer.Controllers
         [HttpGet("{id}", Name = "AccountTypeById")]
         public async Task<IActionResult> GetAccountTypeById(Guid id)
         {
-            try
+            var accountType = await _repository.AccountType.GetAccountTypeByIdAsync(id);
+
+            if (accountType == null)
             {
-                var accountType = await _repository.AccountType.GetAccountTypeByIdAsync(id);
-
-                if (accountType == null)
-                {
-                    _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
-                    return NotFound();
-                }
-                else
-                {
-                    _logger.LogInfo($"Returned AccountType with id: {id}");
-
-                    var accountTypeResult = _mapper.Map<AccountTypesDTO>(accountType);
-                    return Ok(accountTypeResult);
-                }
+                _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
+                return NotFound();
             }
-            catch (Exception ex)
+            else
             {
+                _logger.LogInfo($"Returned AccountType with id: {id}");
 
-                _logger.LogError($"Something went wrong inside GetAccountTypeById action: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                var accountTypeResult = _mapper.Map<AccountTypesDTO>(accountType);
+                return Ok(accountTypeResult);
             }
         }
 
@@ -108,27 +90,19 @@ namespace FamilyBudgetServer.Controllers
         [HttpGet("{id}/account")]
         public async Task<IActionResult> GetAccountTypeWithDetails(Guid id)
         {
-            try
+            var accountType = await _repository.AccountType.GetAccountTypeWithDetailsAsync(id);
+
+            if (accountType == null)
             {
-                var accountType = await _repository.AccountType.GetAccountTypeWithDetailsAsync(id);
-
-                if (accountType == null)
-                {
-                    _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
-                    return NotFound();
-                }
-                else
-                {
-                    _logger.LogInfo($"Returned accountType with details for id: {id}");
-
-                    var accountTypeResult = _mapper.Map<AccountTypesDTO>(accountType);
-                    return Ok(accountTypeResult);
-                }
+                _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
+                return NotFound();
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError($"Something went wrong inside GetAccountTypeWithDetails action: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                _logger.LogInfo($"Returned accountType with details for id: {id}");
+
+                var accountTypeResult = _mapper.Map<AccountTypesDTO>(accountType);
+                return Ok(accountTypeResult);
             }
         }
 
@@ -147,34 +121,28 @@ namespace FamilyBudgetServer.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> CreateAccountType([FromBody] AccountTypeForCreationDto accountType)
         {
-            try
+            if (accountType == null)
             {
-                if (accountType == null)
-                {
-                    _logger.LogError("AccountType object sent from client is null.");
-                    return BadRequest("AccountType object is null");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    _logger.LogError("Invalid AccountType object sent from client.");
-                    return BadRequest("Invalid model object");
-                }
-
-                var accountTypeEntity = _mapper.Map<AccountType>(accountType);
-
-                _repository.AccountType.CreateAccountType(accountTypeEntity);
-                await _repository.SaveAsync();
-
-                var createdAccountType = _mapper.Map<AccountTypesDTO>(accountTypeEntity);
-
-                return CreatedAtRoute("AccountTypeById", new { id = createdAccountType.AccountTypeID }, createdAccountType);
+                _logger.LogError("AccountType object sent from client is null.");
+                return BadRequest("AccountType object is null");
             }
-            catch (Exception ex)
+
+            if (!ModelState.IsValid)
             {
-                _logger.LogError($"Something went wrong inside CreateAccountType action: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                _logger.LogError("Invalid AccountType object sent from client.");
+                return BadRequest("Invalid model object");
             }
+
+            var accountTypeEntity = _mapper.Map<AccountType>(accountType);
+
+            _repository.AccountType.CreateAccountType(accountTypeEntity);
+            await _repository.SaveAsync();
+
+            var createdAccountType = _mapper.Map<AccountTypesDTO>(accountTypeEntity);
+
+            _logger.LogInfo($"New AccountType with id {createdAccountType.AccountTypeID} has been created");
+
+            return CreatedAtRoute("AccountTypeById", new { id = createdAccountType.AccountTypeID }, createdAccountType);
         }
 
         /// <summary>
@@ -195,34 +163,29 @@ namespace FamilyBudgetServer.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAccountType(Guid id, [FromBody] AccountTypeForUpdateDTO accountType)
         {
-            try
+            if (accountType == null)
             {
-                if (accountType == null)
-                {
-                    _logger.LogError("AccountType object sent from client is null.");
-                    return BadRequest("AccountType object is null");
-                }
-                if (!ModelState.IsValid)
-                {
-                    _logger.LogError("Invalid accountType object sent from client.");
-                    return BadRequest("Invalid model object");
-                }
-                var accountTypeEntity = await _repository.AccountType.GetAccountTypeByIdAsync(id);
-                if (accountTypeEntity == null)
-                {
-                    _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
-                    return NotFound();
-                }
-                _mapper.Map(accountType, accountTypeEntity);
-                _repository.AccountType.UpdateAccountType(accountTypeEntity);
-                await _repository.SaveAsync();
-                return NoContent();
+                _logger.LogError("AccountType object sent from client is null.");
+                return BadRequest("AccountType object is null");
             }
-            catch (Exception ex)
+            if (!ModelState.IsValid)
             {
-                _logger.LogError($"Something went wrong inside UpdateAccountType action: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                _logger.LogError("Invalid accountType object sent from client.");
+                return BadRequest("Invalid model object");
             }
+            var accountTypeEntity = await _repository.AccountType.GetAccountTypeByIdAsync(id);
+            if (accountTypeEntity == null)
+            {
+                _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
+                return NotFound();
+            }
+            _mapper.Map(accountType, accountTypeEntity);
+            _repository.AccountType.UpdateAccountType(accountTypeEntity);
+            await _repository.SaveAsync();
+
+            _logger.LogInfo($"AccountType with id {accountTypeEntity.AccountTypeID} has been updated");
+
+            return NoContent();
         }
 
         /// <summary>
@@ -241,30 +204,25 @@ namespace FamilyBudgetServer.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccountType(Guid id)
         {
-            try
+            var accountType = await _repository.AccountType.GetAccountTypeByIdAsync(id);
+            if (accountType == null)
             {
-                var accountType = await _repository.AccountType.GetAccountTypeByIdAsync(id);
-                if (accountType == null)
-                {
-                    _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
-                    return NotFound();
-                }
-
-                if (_repository.Account.AccountsByAccountType(id).Any())
-                {
-                    _logger.LogError($"Cannot delete AccountType with id: {id}. It has related accounts. Delete those accounts first");
-                    return BadRequest("Cannot delete AccountType. It has related accounts. Delete those accounts first");
-                }
-
-                _repository.AccountType.DeleteAccountType(accountType);
-                await _repository.SaveAsync();
-                return NoContent();
+                _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
+                return NotFound();
             }
-            catch (Exception ex)
+
+            if (_repository.Account.AccountsByAccountType(id).Any())
             {
-                _logger.LogError($"Something went wrong inside DeleteAccountType action: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                _logger.LogError($"Cannot delete AccountType with id: {id}. It has related accounts. Delete those accounts first");
+                return BadRequest("Cannot delete AccountType. It has related accounts. Delete those accounts first");
             }
+
+            _repository.AccountType.DeleteAccountType(accountType);
+            await _repository.SaveAsync();
+
+            _logger.LogInfo($"AccountType with id {accountType.AccountTypeID} has been deleted");
+
+            return NoContent();
         }
     }
 }
