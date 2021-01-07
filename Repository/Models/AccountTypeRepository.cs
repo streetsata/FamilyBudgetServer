@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Repository.Models
 {
@@ -16,24 +16,24 @@ namespace Repository.Models
         {
         }
 
-        public IEnumerable<AccountType> GetAllAccountTypes()
+        public async Task<IEnumerable<AccountType>> GetAllAccountTypesAsync()
         {
-            return FindAll()
+            return await FindAll()
                 .OrderBy(at => at.Name)
-                .ToList();
+                .ToListAsync();
         }
 
-        public AccountType GetAccountTypeById(Guid accountTypeID)
+        public async Task<AccountType> GetAccountTypeByIdAsync(Guid accountTypeID)
         {
-            return FindByCondition(accountType => accountType.AccountTypeID.Equals(accountTypeID))
-                .FirstOrDefault();
+            return await FindByCondition(accountType => accountType.AccountTypeID.Equals(accountTypeID))
+                .FirstOrDefaultAsync();
         }
 
-        public AccountType GetAccountTypeWithDetails(Guid accountTypeID)
+        public async Task<AccountType> GetAccountTypeWithDetailsAsync(Guid accountTypeID)
         {
-            return FindByCondition(accountType => accountType.AccountTypeID.Equals(accountTypeID))
+            return await FindByCondition(accountType => accountType.AccountTypeID.Equals(accountTypeID))
                 .Include(ac => ac.Accounts)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
         public void CreateAccountType(AccountType accountType)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using Contracts;
 using Entities.Models;
@@ -25,11 +26,11 @@ namespace FamilyBudgetServer.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllAccountTypes()
+        public async Task<IActionResult> GetAllAccountTypes()
         {
             try
             {
-                var accountTypes = _repository.AccountType.GetAllAccountTypes();
+                var accountTypes = await _repository.AccountType.GetAllAccountTypesAsync();
                 _logger.LogInfo("Returned all accountTypes from database.");
 
                 var accountTypesResult = _mapper.Map<IEnumerable<AccountTypesDTO>>(accountTypes);
@@ -45,11 +46,11 @@ namespace FamilyBudgetServer.Controllers
         }
 
         [HttpGet("{id}", Name = "AccountTypeById")]
-        public IActionResult GetAccountTypeById(Guid id)
+        public async Task<IActionResult> GetAccountTypeById(Guid id)
         {
             try
             {
-                var accountType = _repository.AccountType.GetAccountTypeById(id);
+                var accountType = await _repository.AccountType.GetAccountTypeByIdAsync(id);
 
                 if (accountType == null)
                 {
@@ -73,11 +74,11 @@ namespace FamilyBudgetServer.Controllers
         }
 
         [HttpGet("{id}/account")]
-        public IActionResult GetAccountTypeWithDetails(Guid id)
+        public async Task<IActionResult> GetAccountTypeWithDetails(Guid id)
         {
             try
             {
-                var accountType = _repository.AccountType.GetAccountTypeWithDetails(id);
+                var accountType = await _repository.AccountType.GetAccountTypeWithDetailsAsync(id);
 
                 if (accountType == null)
                 {
@@ -100,7 +101,7 @@ namespace FamilyBudgetServer.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateAccountType([FromBody] AccountTypeForCreationDto accountType)
+        public async Task<IActionResult> CreateAccountType([FromBody] AccountTypeForCreationDto accountType)
         {
             try
             {
@@ -119,7 +120,7 @@ namespace FamilyBudgetServer.Controllers
                 var accountTypeEntity = _mapper.Map<AccountType>(accountType);
 
                 _repository.AccountType.CreateAccountType(accountTypeEntity);
-                _repository.Save();
+                await _repository.SaveAsync();
 
                 var createdAccountType = _mapper.Map<AccountTypesDTO>(accountTypeEntity);
 
@@ -133,7 +134,7 @@ namespace FamilyBudgetServer.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateAccountType(Guid id, [FromBody] AccountTypeForUpdateDTO accountType)
+        public async Task<IActionResult> UpdateAccountType(Guid id, [FromBody] AccountTypeForUpdateDTO accountType)
         {
             try
             {
@@ -147,7 +148,7 @@ namespace FamilyBudgetServer.Controllers
                     _logger.LogError("Invalid accountType object sent from client.");
                     return BadRequest("Invalid model object");
                 }
-                var accountTypeEntity = _repository.AccountType.GetAccountTypeById(id);
+                var accountTypeEntity = await _repository.AccountType.GetAccountTypeByIdAsync(id);
                 if (accountTypeEntity == null)
                 {
                     _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
@@ -155,7 +156,7 @@ namespace FamilyBudgetServer.Controllers
                 }
                 _mapper.Map(accountType, accountTypeEntity);
                 _repository.AccountType.UpdateAccountType(accountTypeEntity);
-                _repository.Save();
+                await _repository.SaveAsync();
                 return NoContent();
             }
             catch (Exception ex)
@@ -166,11 +167,11 @@ namespace FamilyBudgetServer.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteAccountType(Guid id)
+        public async Task<IActionResult> DeleteAccountType(Guid id)
         {
             try
             {
-                var accountType = _repository.AccountType.GetAccountTypeById(id);
+                var accountType = await _repository.AccountType.GetAccountTypeByIdAsync(id);
                 if (accountType == null)
                 {
                     _logger.LogError($"AccountType with id: {id}, hasn't been found in db.");
@@ -184,7 +185,7 @@ namespace FamilyBudgetServer.Controllers
                 }
 
                 _repository.AccountType.DeleteAccountType(accountType);
-                _repository.Save();
+                await _repository.SaveAsync();
                 return NoContent();
             }
             catch (Exception ex)
