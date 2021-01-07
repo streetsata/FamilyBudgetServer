@@ -1,3 +1,4 @@
+using AutoMapper;
 using FamilyBudgetServer.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +29,7 @@ namespace FamilyBudgetServer
             services.ConfigureLoggerService();
             services.ConfigureMySqlContext(Configuration);
             services.ConfigureRepositoryWrapper();
+            services.AddAutoMapper(typeof(Startup));
 
             services.AddControllers();
         }
