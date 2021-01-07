@@ -2,6 +2,7 @@
 using Contracts.Models;
 using Entities;
 using Repository.Models;
+using System.Threading.Tasks;
 
 namespace Repository
 {
@@ -36,9 +37,9 @@ namespace Repository
         {
             _repoContext = repositoryContext;
         }
-        public void Save()
+        public async Task SaveAsync()
         {
-            _repoContext.SaveChanges();
+            await _repoContext.SaveChangesAsync();
         }
     }
 }

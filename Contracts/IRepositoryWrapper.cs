@@ -1,4 +1,5 @@
 ﻿using Contracts.Models;
+using System.Threading.Tasks;
 
 namespace Contracts
 {
@@ -6,6 +7,6 @@ namespace Contracts
     {
         IAccountTypeRepository AccountType { get; }
         IAccountRepository Account { get; }
-        void Save();
+        Task SaveAsync();
     }
 }

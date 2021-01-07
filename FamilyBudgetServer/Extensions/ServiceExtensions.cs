@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Repository;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace FamilyBudgetServer.Extensions
 {
@@ -54,6 +57,35 @@ namespace FamilyBudgetServer.Extensions
         public static void ConfigureRepositoryWrapper(this IServiceCollection services)
         {
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
+        }
+
+        public static void ConfigureSwagger(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+                {
+                    Title = "Family Buget API",
+                    Version = "v1",
+                    Description = "An API to perform Family Budget operations",
+                    TermsOfService = new Uri("https://example.com/terms"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Serhii Artemenko",
+                        Email = "sergartem.sa@gmail.com",
+                        Url = new Uri("https://github.com/streetsata/FamilyBudgetServer"),
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Family Budget API LICX",
+                        Url = new Uri("https://example.com/license"),
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
         }
     }
 }
